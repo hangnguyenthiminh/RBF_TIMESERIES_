@@ -140,8 +140,9 @@ namespace RBF_TIMESERIES
                 Array.Copy(testData[i], xValues, numInput); // parse test data into x-values and t-values
                 Array.Copy(testData[i], numInput, tValues, 0, numOutput);
                 yValues = this.ComputeOutputs(xValues);
-                double[] ideal = testData[i];
-                sumError += Math.Abs(ideal[numInput] - yValues[0]);
+                //
+                double ideal = testData[i][numInput];
+                sumError += Math.Abs(ideal - yValues[0]);
             }
             errorTest = sumError / totalNumber;
             return errorTest;

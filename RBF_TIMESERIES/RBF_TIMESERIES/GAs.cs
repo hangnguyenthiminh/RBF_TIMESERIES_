@@ -92,9 +92,6 @@ namespace RBF_TIMESERIES
             }
         }
         // Đây là hàm lai ghép, 2 điểm cắt
-        // Chịu khó thức muộn tí nhé vâng
-        // Mai có đi làm ko?
-        //mai em đi làm muộn ạ ok
         private Individual[] DoCrossover(Individual parent1, Individual parent2) // TwoCrossCutingPoint
         {
             double probability = 0.9;
