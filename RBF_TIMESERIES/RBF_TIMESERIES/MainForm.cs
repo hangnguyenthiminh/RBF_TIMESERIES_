@@ -290,12 +290,15 @@ namespace RBF_TIMESERIES
             RadialNetwork rn = new RadialNetwork(numInput, numHidden, numOutput);
             Console.WriteLine("\nBeginning RBF training\n");
             int maxIterations = 50; // max for GA
-
-            double[] bestWeights = rn.TrainWithGA(trainData, maxIterations);
+            int maxEvaluations = 1000;           // max for NSGAII              
             //double[] bestWeights = rn.TrainWithPSO(trainData, maxIterations);
+            double[] bestWeights = rn.TrainWithGA(trainData, maxIterations);
+
+            // Population bestWeights = rn.TrainWithNSGAII(trainData, maxEvaluations);
+
 
             Console.WriteLine("\nEvaluating result RBF classification accuracy on the test data");
-            rn.SetWeights(bestWeights);
+            //rn.SetWeights(bestWeights);
 
             double acc = rn.Accuracy(testData);
 

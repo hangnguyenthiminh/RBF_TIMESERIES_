@@ -347,6 +347,12 @@ namespace RBF_TIMESERIES
         //    this.widths[i] = width;
         //}
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="trainData"></param>
+        /// <param name="maxIterations"></param>
+        /// <returns></returns>
         private double[] DoWeightsWithGA(double[][] trainData, int maxIterations)
         {
             // use GA to find weights and bias values that produce a RBF network
@@ -368,6 +374,18 @@ namespace RBF_TIMESERIES
             return returnResult;
         } // DoWeights
 
+        private Population DoWeightsWithNSGAII(double[][] trainData, int maxEvaluations)
+        {
+            int Dim = (numHidden * numOutput) + numOutput; // dimensions is num weights + num biases
+            NSGAII nsgaIIAlgorithm = new NSGAII(100, Dim, this, maxEvaluations, trainData);
+            nsgaIIAlgorithm.Execute(trainData);
+
+            ///
+            Population returnResult = new Population(maxEvaluations);
+            return returnResult;
+        } // DoWeights
+
+
         public double[] TrainWithGA(double[][] trainData, int maxIterations)
         {
             // Chu y cho nay:
@@ -386,6 +404,17 @@ namespace RBF_TIMESERIES
 
             return bestWeights;
         } // Train
+
+
+        public Population TrainWithNSGAII(double[][] trainData)
+        {
+            // Chu y cho nay:
+            DoCentroids(trainData); // find representative data, store their x-values into this.centroids
+            DoWidths(this.centroids); // measure of how far apart centroids are
+            Population bestWeights = DoWeightsWithNSGAII(trainData); 
+            return bestWeights;
+        } // Train
+
 
         // -- The Euclidean Distance function is used by RBF ComputeOutputs and also DoWidths ----
 

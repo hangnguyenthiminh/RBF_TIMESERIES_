@@ -14,6 +14,9 @@ namespace RBF_TIMESERIES
         private int n_gens;  // Chiều dài của chuỗi cá thể ( độ dài của mảng weight)
         public double[] values; // Mảng lưu giá trị của weight ây
         public double fitness;
+        private double[] obj;
+        private int numberOfObjectives;
+        public double CrowdingDistance { get; set; }
         public double Fitness
         {
             get { return fitness; }
@@ -30,6 +33,47 @@ namespace RBF_TIMESERIES
             get { return values; }
             set { values = value; }
         }
+
+        
+        public double[] Objective
+        {
+            get
+            {
+                return obj;
+            }
+            set
+            {
+                obj = value;
+            }
+        }
+
+        /// <summary>
+        /// Returns the number of objectives.
+        /// </summary>
+        public int NumberOfObjectives
+        {
+            get
+            {
+                if (this.Objective == null)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return numberOfObjectives;
+                };
+            }
+        }
+
+        public int Rank { get; set; }
+
+        /// <summary>
+        /// Stores the overall constraint violation of the solution
+        /// </summary>
+        public double OverallConstraintViolation { get; set; }
+        public int NumberOfViolatedConstraints { get; set; }
+
+        
 
         public Individual(int n_gens)
         {
@@ -50,24 +94,36 @@ namespace RBF_TIMESERIES
         {
             values = w;
         }
+        public Individual()
+        {
+            this.OverallConstraintViolation = 0.0;
+            this.NumberOfViolatedConstraints = 0;
+            this.CrowdingDistance = 0.0;
+            this.Objective = null;
+        }
+
         public Individual(Individual w)
         {
             this.n_gens = w.n_gens;
             this.values = w.Values;
+            this.CrowdingDistance = w.CrowdingDistance;
+            this.OverallConstraintViolation = w.OverallConstraintViolation;
+            this.NumberOfViolatedConstraints = w.NumberOfViolatedConstraints;
+            this.Objective = w.obj;
         }
         public double GetLowerBound()
         {
             double min = 9999999;
             for (int i = 0; i < n_gens; i++)
             {
-                if(values[i] < min)
+                if (values[i] < min)
                 {
                     min = values[i];
                 }
             }
             return min;
-        }//2 thằng này để làm j ạ, sau này có lúc sẽ cần xét giá trị lớn nhất của cả mảng, để chặn thôi, ko thích thì bỏ đi, vâng thôi cứ để ở đấy ạ
-        // Xem qua cả population đi, 2 phút nhé
+        }
+
         public double GetUpperBound()
         {
             double max = -9999999;
@@ -80,6 +136,6 @@ namespace RBF_TIMESERIES
             }
             return max;
         }
-       
+
     }
 }

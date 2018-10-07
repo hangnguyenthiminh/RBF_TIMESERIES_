@@ -4,7 +4,7 @@ using System.Text;
 // Đây là lớp quần thể
 namespace RBF_TIMESERIES
 {
-    public class Population:ICloneable
+    public class Population : ICloneable
     {
         private int population_size; // Kích thước quần thể
         private Individual[] individuals; // Tập cá thể trong quần thể
@@ -25,14 +25,57 @@ namespace RBF_TIMESERIES
             this.population_size = population_size;
             individuals = new Individual[population_size];
         }
+
+        public Individual Get(int i)
+        {
+            if (i >= this.IndividualList.Count)
+            {
+                throw new IndexOutOfRangeException("Index out of Bound " + i);
+            }
+            return this.IndividualList[i];
+        }
+
+        public List<Individual> IndividualList
+        {
+            get;
+            protected set;
+        }
+
+        public int Capacity
+        {
+            get;
+            set;
+        }
+
+        public int Size()
+        {
+            return this.IndividualList.Count;
+        }
+
+        public bool Add(Individual individual)
+        {
+            if (IndividualList.Count == 0)
+            {
+                return false;
+            }
+            IndividualList.Add(individual);
+            return true;
+        }
+
         public object Clone()
         {
             return MemberwiseClone();
         }
+
+        public void Clear()
+        {
+            this.IndividualList.Clear();
+        }
+
         public void Population_init(int n_gens)
         {
             Random r = new Random();
-            
+
             for (int i = 0; i < population_size; i++)
             {
                 individuals[i] = new Individual(n_gens);
@@ -54,6 +97,37 @@ namespace RBF_TIMESERIES
                 }
             }
             return individuals[indeMax];
+        }
+
+        public Population Union(Population population)
+        {
+            int newSize = this.Size() + population.Population_size;
+            if (newSize < Capacity)
+            {
+                newSize = Capacity;
+            }
+
+            Population union = new Population(newSize);
+
+            for (int i = 0; i < this.Size(); i++)
+            {
+                union.Add(this.IndividualList[i]);
+            }
+
+            for (int i = 0; i < population.Size(); i++)
+            {
+                union.Add(population.IndividualList[i]);
+            }
+
+            return union;
+        }
+        public void Sort(IComparer<Individual> comparator)
+        {
+            if (comparator == null)
+            {
+                return;
+            }
+            IndividualList.Sort(comparator);
         }
     }
 }
