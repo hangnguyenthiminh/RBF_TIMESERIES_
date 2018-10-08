@@ -32,7 +32,7 @@ namespace RBF_TIMESERIES
 		/// <summary>
 		/// stores a <code>Comparator</code> for Overal Constraint Violation Comparator checking
 		/// </summary>
-		private static readonly IComparer<Individual> constraint = new OverallConstraintViolationComparator();
+		private static readonly IComparer<Individual> constraint = new ConstraintViolationComparator();
 
 		/// <summary>
 		/// Constructor.

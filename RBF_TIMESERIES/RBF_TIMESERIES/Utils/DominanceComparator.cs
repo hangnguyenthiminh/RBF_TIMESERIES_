@@ -5,9 +5,9 @@ namespace RBF_TIMESERIES.Utils
 {
 	public class DominanceComparator : IComparer<Individual>
 	{
-		#region Private Attributes
+        #region Private Attributes
 
-		IConstraintViolationComparator violationConstraintComparator;
+        ConstraintViolationComparator violationConstraintComparator;
 
 		#endregion
 		#region Constructors
@@ -16,22 +16,17 @@ namespace RBF_TIMESERIES.Utils
 		/// </summary>
 		public DominanceComparator()
 		{
-			violationConstraintComparator = new OverallConstraintViolationComparator();
+			violationConstraintComparator = new ConstraintViolationComparator();
 		}
 
 		/// <summary>
 		/// Constructor
 		/// </summary>
 		/// <param name="comparator"></param>
-		public DominanceComparator(IConstraintViolationComparator comparator)
+		public DominanceComparator(ConstraintViolationComparator comparator)
 		{
 			violationConstraintComparator = comparator;
 		}
-
-        public int Compare(Individual x, Individual y)
-        {
-            throw new NotImplementedException();
-        }
 
         #endregion
 

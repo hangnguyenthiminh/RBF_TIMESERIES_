@@ -292,10 +292,8 @@ namespace RBF_TIMESERIES
             int maxIterations = 50; // max for GA
             int maxEvaluations = 1000;           // max for NSGAII              
             //double[] bestWeights = rn.TrainWithPSO(trainData, maxIterations);
-            double[] bestWeights = rn.TrainWithGA(trainData, maxIterations);
-
-            // Population bestWeights = rn.TrainWithNSGAII(trainData, maxEvaluations);
-
+            //double[] bestWeights = rn.TrainWithGA(trainData, maxIterations);
+            Population bestWeights = rn.TrainWithNSGAII(trainData, maxEvaluations);
 
             Console.WriteLine("\nEvaluating result RBF classification accuracy on the test data");
             //rn.SetWeights(bestWeights);

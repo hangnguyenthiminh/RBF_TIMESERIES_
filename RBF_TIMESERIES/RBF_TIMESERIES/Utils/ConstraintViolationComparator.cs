@@ -1,11 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace RBF_TIMESERIES.Utils
 {
-	public class OverallConstraintViolationComparator : IConstraintViolationComparator
-	{
-		#region Implement Interface
-
+	public class ConstraintViolationComparator : IComparer<Individual>
+    {
 		/// <summary>
 		/// Compares two solutions.
 		/// </summary>
@@ -49,18 +48,13 @@ namespace RBF_TIMESERIES.Utils
 			return result;
 		}
 
-        public bool NeedToCompare(Individual s1, Individual s2)
-        {
-            throw new NotImplementedException();
-        }
-
         /// <summary>
         /// 
         /// </summary>
         /// <param name="s1"></param>
         /// <param name="s2"></param>
         /// <returns>Returns true if solutions s1 and/or s2 have an overall constraint violation < 0</returns>
-        public bool NeedToCompare(Solution s1, Solution s2)
+        public bool NeedToCompare(Individual s1, Individual s2)
 		{
 			bool needToCompare;
 			needToCompare = (s1.OverallConstraintViolation < 0) || (s2.OverallConstraintViolation < 0);
@@ -68,6 +62,5 @@ namespace RBF_TIMESERIES.Utils
 			return needToCompare;
 		}
 
-		#endregion
 	}
 }

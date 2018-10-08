@@ -376,9 +376,11 @@ namespace RBF_TIMESERIES
 
         private Population DoWeightsWithNSGAII(double[][] trainData, int maxEvaluations)
         {
+            int populationSize = 100;
             int Dim = (numHidden * numOutput) + numOutput; // dimensions is num weights + num biases
-            NSGAII nsgaIIAlgorithm = new NSGAII(100, Dim, this, maxEvaluations, trainData);
-            nsgaIIAlgorithm.Execute(trainData);
+            NSGAII nsgaIIAlgorithm = new NSGAII(populationSize, Dim, this, maxEvaluations, trainData);
+            Population bestWeights = new Population(populationSize);
+            bestWeights = nsgaIIAlgorithm.Execute(trainData);
 
             ///
             Population returnResult = new Population(maxEvaluations);
@@ -406,12 +408,12 @@ namespace RBF_TIMESERIES
         } // Train
 
 
-        public Population TrainWithNSGAII(double[][] trainData)
+        public Population TrainWithNSGAII(double[][] trainData, int maxEvaluations)
         {
             // Chu y cho nay:
             DoCentroids(trainData); // find representative data, store their x-values into this.centroids
             DoWidths(this.centroids); // measure of how far apart centroids are
-            Population bestWeights = DoWeightsWithNSGAII(trainData); 
+            Population bestWeights = DoWeightsWithNSGAII(trainData, maxEvaluations); 
             return bestWeights;
         } // Train
 

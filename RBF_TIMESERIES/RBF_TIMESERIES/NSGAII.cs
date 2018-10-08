@@ -97,7 +97,7 @@ namespace RBF_TIMESERIES
             // Bước 1: Khởi tạo quần thể
             // Create the initial solutionSet
             population = new Population(m_Population_size);
-
+            population = (Population)Population.Clone();
             // Vòng lặp tiến hóa 
             while (evaluations < m_MaxEvaluations)
             {
@@ -127,8 +127,8 @@ namespace RBF_TIMESERIES
                         DoMutation(offSpring[0]);
                         DoMutation(offSpring[1]);
 
-                        offSpring[0].Objective[0] = CalculateFitnessOf(offSpring[0], inputData);
-                        offSpring[1].Objective[0] = CalculateFitnessOf(offSpring[1], inputData);
+                       // offSpring[0].Objective[0] = CalculateFitnessOf(offSpring[0], inputData);
+                     //   offSpring[1].Objective[0] = CalculateFitnessOf(offSpring[1], inputData);
 
                         // Đưa 2 con vào danh sách 
                         offspringPopulation.Add(offSpring[0]);
@@ -188,32 +188,11 @@ namespace RBF_TIMESERIES
                     remain = 0;
                 }
 
-                // Đoạn mã này cho thấy cách sử dụng đối tượng chỉ thị vào mã
-                // của NSGA-II. Đặc biệt, nó tìm thấy số lượng các đánh giá cần thiết
-                // bởi thuật toán để có được front Pareto với một hypervolume cao hơn
-                // so với hypervolume của front Pareto thực sự.
-
-                /*     if ((indicators != null) && (requiredEvaluations == 0))
-                     {
-                         double HV = indicators.GetHypervolume(population);
-                         if (HV >= (0.98 * indicators.TrueParetoFrontHypervolume))
-                         {
-                             requiredEvaluations = evaluations;
-                         }
-                     }
-                 }
-
-                 // Return as output parameter the required evaluations
-                 SetOutputParameter("evaluations", requiredEvaluations);
-
-                 // Return the first non-dominated front
-                 Ranking rank = new Ranking(population);
-
-                 Result = rank.GetSubfront(0);
-
-                 return Result;*/
-                return new Population(100);
             }
+            // Return the first non-dominated front
+            Ranking rank = new Ranking(population);
+            Population result = rank.GetSubfront(0);
+            return result;
         }
 
         private Individual[] SBXCrossover(Individual[] parents)
@@ -250,14 +229,13 @@ namespace RBF_TIMESERIES
 
             int numberOfVariables = x1.N_gens;
 
-            Random r = new Random();
-            if (r.NextDouble() <= crossoverProbability)
+            if (m_Random.NextDouble() <= crossoverProbability)
             {
                 for (i = 0; i < numberOfVariables; i++)
                 {
                     valueX1 = x1.Values[i];
                     valueX2 = x2.Values[i];
-                    if (r.NextDouble() <= 0.5)
+                    if (m_Random.NextDouble() <= 0.5)
                     {
                         if (Math.Abs(valueX1 - valueX2) > EPS)
                         {
@@ -276,7 +254,7 @@ namespace RBF_TIMESERIES
                             yL = x1.GetLowerBound(); //lowerBound
                             yu = x1.GetUpperBound(); //upperBound
 
-                            rand = r.NextDouble();
+                            rand = m_Random.NextDouble();
                             beta = 1.0 + (2.0 * (y1 - yL) / (y2 - y1));
                             alpha = 2.0 - Math.Pow(beta, -(distributionIndex + 1.0));
 
@@ -324,7 +302,7 @@ namespace RBF_TIMESERIES
                                 c2 = yu;
                             }
 
-                            if (r.NextDouble() <= 0.5)
+                            if (m_Random.NextDouble() <= 0.5)
                             {
                                 offs1.Values[i] = c2;
                                 offs2.Values[i] = c1;
@@ -364,19 +342,18 @@ namespace RBF_TIMESERIES
         {
             double rnd, delta1, delta2, mut_pow, deltaq;
             double y, yl, yu, val, xy;
-            Random r = new Random();
 
             Individual x = new Individual(individual);
             for (int var = 0; var < individual.N_gens; var++)
             {
-                if (r.NextDouble() <= mutationProb)
+                if (m_Random.NextDouble() <= mutationProb)
                 {
                     y = x.Values[var];
                     yl = x.GetLowerBound();
                     yu = x.GetUpperBound();
                     delta1 = (y - yl) / (yu - yl);
                     delta2 = (yu - y) / (yu - yl);
-                    rnd = r.NextDouble();
+                    rnd = m_Random.NextDouble();
                     mut_pow = 1.0 / (eta_m + 1.0);
                     if (rnd <= 0.5)
                     {

@@ -8,7 +8,6 @@ namespace RBF_TIMESERIES
     {
         private int population_size; // Kích thước quần thể
         private Individual[] individuals; // Tập cá thể trong quần thể
-        // Các hàm này hiểu hết rồi chứ nàng?
         public int Population_size
         {
             get { return population_size; }
@@ -24,6 +23,7 @@ namespace RBF_TIMESERIES
         {
             this.population_size = population_size;
             individuals = new Individual[population_size];
+            IndividualList = new List<Individual>();
         }
 
         public Individual Get(int i)
@@ -41,12 +41,6 @@ namespace RBF_TIMESERIES
             protected set;
         }
 
-        public int Capacity
-        {
-            get;
-            set;
-        }
-
         public int Size()
         {
             return this.IndividualList.Count;
@@ -54,7 +48,7 @@ namespace RBF_TIMESERIES
 
         public bool Add(Individual individual)
         {
-            if (IndividualList.Count == 0)
+            if (IndividualList.Count == population_size)
             {
                 return false;
             }
@@ -102,9 +96,9 @@ namespace RBF_TIMESERIES
         public Population Union(Population population)
         {
             int newSize = this.Size() + population.Population_size;
-            if (newSize < Capacity)
+            if (newSize < population_size)
             {
-                newSize = Capacity;
+                newSize = population_size;
             }
 
             Population union = new Population(newSize);

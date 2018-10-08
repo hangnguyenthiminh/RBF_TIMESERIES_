@@ -71,9 +71,6 @@ namespace RBF_TIMESERIES
         /// Stores the overall constraint violation of the solution
         /// </summary>
         public double OverallConstraintViolation { get; set; }
-        public int NumberOfViolatedConstraints { get; set; }
-
-        
 
         public Individual(int n_gens)
         {
@@ -97,19 +94,24 @@ namespace RBF_TIMESERIES
         public Individual()
         {
             this.OverallConstraintViolation = 0.0;
-            this.NumberOfViolatedConstraints = 0;
             this.CrowdingDistance = 0.0;
             this.Objective = null;
+            this.Values = null;
         }
 
         public Individual(Individual w)
         {
             this.n_gens = w.n_gens;
             this.values = w.Values;
+            this.numberOfObjectives = w.numberOfObjectives;
+            this.Objective = new double[this.numberOfObjectives];
+            for (int i = 0; i < this.Objective.Length; i++)
+            {
+                this.Objective[i] = w.Objective[i];
+            }
             this.CrowdingDistance = w.CrowdingDistance;
             this.OverallConstraintViolation = w.OverallConstraintViolation;
-            this.NumberOfViolatedConstraints = w.NumberOfViolatedConstraints;
-            this.Objective = w.obj;
+            
         }
         public double GetLowerBound()
         {
