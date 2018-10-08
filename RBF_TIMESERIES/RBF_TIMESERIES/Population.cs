@@ -66,15 +66,14 @@ namespace RBF_TIMESERIES
             this.IndividualList.Clear();
         }
 
-        public void Population_init(int n_gens)
+        public void Population_init(int n_gens, int numberOfObjectives)
         {
             Random r = new Random();
 
             for (int i = 0; i < population_size; i++)
             {
-                individuals[i] = new Individual(n_gens);
+                individuals[i] = new Individual(n_gens, numberOfObjectives);
                 individuals[i].Individual_init(r);
-
             }
         }
 
@@ -84,9 +83,9 @@ namespace RBF_TIMESERIES
             int indeMax = 0;
             for (int i = 0; i < population_size; i++)
             {
-                if (individuals[i].Fitness > max)
+                if (individuals[i].Objective[0] > max)
                 {
-                    max = individuals[i].Fitness;
+                    max = individuals[i].Objective[0];
                     indeMax = i;
                 }
             }
@@ -115,6 +114,8 @@ namespace RBF_TIMESERIES
 
             return union;
         }
+
+        public Population Result { get; protected set; }
         public void Sort(IComparer<Individual> comparator)
         {
             if (comparator == null)

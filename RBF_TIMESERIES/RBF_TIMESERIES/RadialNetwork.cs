@@ -359,8 +359,8 @@ namespace RBF_TIMESERIES
             // that best matches training data
             // Nhin nay, 1 ca the la 1 mang 1 chieu co do dai nhu sau:
             int Dim = (numHidden * numOutput) + numOutput; // dimensions is num weights + num biases
-
-            GAs gaAlgorithm = new GAs(100, Dim, this, maxIterations, trainData);
+            int numberOfObjectives = 1;
+            GAs gaAlgorithm = new GAs(100, Dim, this, maxIterations, trainData, numberOfObjectives);
             gaAlgorithm.Reproduction(trainData);
 
             double[] bestGlobalPosition = gaAlgorithm.Population.getBestOne().Values;
@@ -377,8 +377,9 @@ namespace RBF_TIMESERIES
         private Population DoWeightsWithNSGAII(double[][] trainData, int maxEvaluations)
         {
             int populationSize = 100;
+            int numberOfObjectives = 2;
             int Dim = (numHidden * numOutput) + numOutput; // dimensions is num weights + num biases
-            NSGAII nsgaIIAlgorithm = new NSGAII(populationSize, Dim, this, maxEvaluations, trainData);
+            NSGAII nsgaIIAlgorithm = new NSGAII(populationSize, Dim, this, maxEvaluations, trainData, numberOfObjectives);
             Population bestWeights = new Population(populationSize);
             bestWeights = nsgaIIAlgorithm.Execute(trainData);
 

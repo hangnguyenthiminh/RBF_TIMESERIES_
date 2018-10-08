@@ -13,15 +13,15 @@ namespace RBF_TIMESERIES
     {
         private int n_gens;  // Chiều dài của chuỗi cá thể ( độ dài của mảng weight)
         public double[] values; // Mảng lưu giá trị của weight ây
-        public double fitness;
+        //public double fitness;
         private double[] obj;
         private int numberOfObjectives;
         public double CrowdingDistance { get; set; }
-        public double Fitness
-        {
-            get { return fitness; }
-            set { fitness = value; }
-        }
+        //public double Fitness
+        //{
+        //    get { return fitness; }
+        //    set { fitness = value; }
+        //}
         public int N_gens
         {
             get { return n_gens; }
@@ -72,10 +72,12 @@ namespace RBF_TIMESERIES
         /// </summary>
         public double OverallConstraintViolation { get; set; }
 
-        public Individual(int n_gens)
+        public Individual(int n_gens, int numberOfObjectives)
         {
             this.n_gens = n_gens;
             values = new double[n_gens];
+            this.numberOfObjectives = numberOfObjectives;
+            this.Objective = new double[numberOfObjectives];
         }
         // Khởi tạo giá trị ngẫu nhiên của 1 cá thể 
         public void Individual_init(Random r)
@@ -95,6 +97,7 @@ namespace RBF_TIMESERIES
         {
             this.OverallConstraintViolation = 0.0;
             this.CrowdingDistance = 0.0;
+            this.numberOfObjectives = 0;
             this.Objective = null;
             this.Values = null;
         }

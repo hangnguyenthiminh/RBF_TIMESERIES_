@@ -46,7 +46,7 @@ namespace RBF_TIMESERIES
             set { mutationProb = value; }
         }
 
-        public NSGAII(int m_Population_size, int m_IndividualLength, RadialNetwork RadialNetwork, double m_MaxEvaluations, double[][] inputData)
+        public NSGAII(int m_Population_size, int m_IndividualLength, RadialNetwork RadialNetwork, double m_MaxEvaluations, double[][] inputData, int numberOfObjectives)
         {
             this.m_Population_size = m_Population_size;
             this.m_IndividualLength = m_IndividualLength;
@@ -54,13 +54,13 @@ namespace RBF_TIMESERIES
             this.Population = new Population(m_Population_size);
             this.m_RadialNetwork = RadialNetwork;
             this.m_MaxEvaluations = m_MaxEvaluations;
-            this.Population.Population_init(m_IndividualLength);
+            this.Population.Population_init(m_IndividualLength, numberOfObjectives);
             mutationProb = 1.0 / m_IndividualLength;
 
             // set fitness
             for (int i = 0; i < m_Population_size; i++)
             {
-                CalculateFitnessOf(Population.Individuals[i], inputData);
+                 CalculateFitnessOf(Population.Individuals[i], inputData);
             }
         }
 
@@ -71,7 +71,7 @@ namespace RBF_TIMESERIES
             double fitness = 0.0;
             rn.SetWeights(individual.values);
             fitness = rn.Accuracy(inputData);
-            individual.Fitness = fitness;
+            individual.Objective[0] = fitness;
             return fitness;
         }
 
@@ -127,8 +127,8 @@ namespace RBF_TIMESERIES
                         DoMutation(offSpring[0]);
                         DoMutation(offSpring[1]);
 
-                       // offSpring[0].Objective[0] = CalculateFitnessOf(offSpring[0], inputData);
-                     //   offSpring[1].Objective[0] = CalculateFitnessOf(offSpring[1], inputData);
+                        offSpring[0].Objective[0] = CalculateFitnessOf(offSpring[0], inputData);
+                        offSpring[1].Objective[0] = CalculateFitnessOf(offSpring[1], inputData);
 
                         // Đưa 2 con vào danh sách 
                         offspringPopulation.Add(offSpring[0]);

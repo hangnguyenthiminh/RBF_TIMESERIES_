@@ -28,7 +28,7 @@ namespace RBF_TIMESERIES
             }
         }
 
-        public GAs(int m_Population_size, int m_IndividualLength, RadialNetwork RadialNetwork, double m_MaxIterations, double[][] inputData)
+        public GAs(int m_Population_size, int m_IndividualLength, RadialNetwork RadialNetwork, double m_MaxIterations, double[][] inputData, int numberOfObjectives)
         {
             this.m_Population_size = m_Population_size;
             this.m_IndividualLength = m_IndividualLength;
@@ -37,7 +37,7 @@ namespace RBF_TIMESERIES
             this.m_RadialNetwork = RadialNetwork;
             this.m_MaxIterations = m_MaxIterations;
 
-            this.Population.Population_init(m_IndividualLength);
+            this.Population.Population_init(m_IndividualLength, numberOfObjectives);
             // set fitness
             for (int i = 0; i < m_Population_size; i++)
             {
@@ -171,14 +171,14 @@ namespace RBF_TIMESERIES
                     // chỉ với những cái cho ra MSE tốt thì mới được cho vào thế hệ mới, còn không vẫn giữ những cái cũ
                     if (MSE_temp1 > MSE_temp2)
                     {
-                        if (MSE_temp1 > currIndividual.Fitness)
+                        if (MSE_temp1 > currIndividual.Objective[0])
                         {
                             Childs[0].Values.CopyTo(Population.Individuals[index].Values, 0);
                         }
                     }
                     else
                     {
-                        if (MSE_temp2 > currIndividual.Fitness)
+                        if (MSE_temp2 > currIndividual.Objective[0])
                         {
                             Childs[1].Values.CopyTo(Population.Individuals[index].Values, 0);
                         }
@@ -194,7 +194,7 @@ namespace RBF_TIMESERIES
             double fitness = 0.0;
             rn.SetWeights(individual.values);
             fitness = rn.Accuracy(inputData);
-            individual.Fitness = fitness;
+            individual.Objective[0] = fitness;
             return fitness;
         }
     }
