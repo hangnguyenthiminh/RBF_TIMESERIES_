@@ -115,7 +115,6 @@ namespace RBF_TIMESERIES
             return union;
         }
 
-        public Population Result { get; protected set; }
         public void Sort(IComparer<Individual> comparator)
         {
             if (comparator == null)
