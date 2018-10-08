@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace RBF_TIMESERIES.Utils
 {
-	public class DominanceComparator : IComparer<Individual>
+	public class DominanceComparator : IComparer<Individual_NSGA>
 	{
         #region Private Attributes
 
@@ -38,7 +38,7 @@ namespace RBF_TIMESERIES.Utils
         /// <param name="s1">The first <code>Solution</code></param>
         /// <param name="s2">The second <code>Solution</code></param>
         /// <returns>-1, or 0, or 1 if solution1 dominates solution2, both are non-dominated, or solution1 is dominated by solution22, respectively.</returns>
-        public int Compare(Individual s1, Individual s2)
+        public int Compare(Individual_NSGA s1, Individual_NSGA s2)
 		{
 			if (s1 == null)
 			{

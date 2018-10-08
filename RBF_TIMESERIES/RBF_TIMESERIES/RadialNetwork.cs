@@ -359,8 +359,7 @@ namespace RBF_TIMESERIES
             // that best matches training data
             // Nhin nay, 1 ca the la 1 mang 1 chieu co do dai nhu sau:
             int Dim = (numHidden * numOutput) + numOutput; // dimensions is num weights + num biases
-            int numberOfObjectives = 1;
-            GAs gaAlgorithm = new GAs(100, Dim, this, maxIterations, trainData, numberOfObjectives);
+            GAs gaAlgorithm = new GAs(100, Dim, this, maxIterations, trainData);
             gaAlgorithm.Reproduction(trainData);
 
             double[] bestGlobalPosition = gaAlgorithm.Population.getBestOne().Values;
@@ -374,17 +373,17 @@ namespace RBF_TIMESERIES
             return returnResult;
         } // DoWeights
 
-        private Population DoWeightsWithNSGAII(double[][] trainData, int maxEvaluations)
+        private Population_NSGA DoWeightsWithNSGAII(double[][] trainData, int maxEvaluations)
         {
             int populationSize = 100;
             int numberOfObjectives = 2;
             int Dim = (numHidden * numOutput) + numOutput; // dimensions is num weights + num biases
             NSGAII nsgaIIAlgorithm = new NSGAII(populationSize, Dim, this, maxEvaluations, trainData, numberOfObjectives);
-            Population bestWeights = new Population(populationSize);
-            bestWeights = nsgaIIAlgorithm.Execute(trainData);
+            Population_NSGA bestWeights = new Population_NSGA(populationSize);
+            bestWeights = nsgaIIAlgorithm.Execute();
 
             ///
-            Population returnResult = new Population(maxEvaluations);
+            Population_NSGA returnResult = new Population_NSGA(maxEvaluations);
             return returnResult;
         } // DoWeights
 
@@ -409,12 +408,12 @@ namespace RBF_TIMESERIES
         } // Train
 
 
-        public Population TrainWithNSGAII(double[][] trainData, int maxEvaluations)
+        public Population_NSGA TrainWithNSGAII(double[][] trainData, int maxEvaluations)
         {
             // Chu y cho nay:
             DoCentroids(trainData); // find representative data, store their x-values into this.centroids
             DoWidths(this.centroids); // measure of how far apart centroids are
-            Population bestWeights = DoWeightsWithNSGAII(trainData, maxEvaluations); 
+            Population_NSGA bestWeights = DoWeightsWithNSGAII(trainData, maxEvaluations);
             return bestWeights;
         } // Train
 

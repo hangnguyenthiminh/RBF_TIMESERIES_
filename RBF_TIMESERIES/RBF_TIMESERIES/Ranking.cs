@@ -17,28 +17,28 @@ namespace RBF_TIMESERIES
 		/// <summary>
 		/// The <code>SolutionSet</code> to rank
 		/// </summary>
-		private Population population;
+		private Population_NSGA population;
 
 		/// <summary>
 		/// An array containing all the fronts found during the search
 		/// </summary>
-		private Population[] ranking;
+		private Population_NSGA[] ranking;
 
 		/// <summary>
 		/// stores a <code>Comparator</code> for dominance checking
 		/// </summary>
-		private static readonly IComparer<Individual> dominance = new DominanceComparator();
+		private static readonly IComparer<Individual_NSGA> dominance = new DominanceComparator();
 
 		/// <summary>
 		/// stores a <code>Comparator</code> for Overal Constraint Violation Comparator checking
 		/// </summary>
-		private static readonly IComparer<Individual> constraint = new ConstraintViolationComparator();
+		private static readonly IComparer<Individual_NSGA> constraint = new ConstraintViolationComparator();
 
 		/// <summary>
 		/// Constructor.
 		/// </summary>
 		/// <param name="population">The <code>SolutionSet</code> to be ranked.</param>
-		public Ranking(Population population)
+		public Ranking(Population_NSGA population)
 		{
 			this.population = population;
 
@@ -123,11 +123,11 @@ namespace RBF_TIMESERIES
 			}
 			//<-
 
-			ranking = new Population[k];
+			ranking = new Population_NSGA[k];
 			//0,1,2,....,i-1 are front, then i fronts
 			for (int j = 0; j < k; j++)
 			{
-				ranking[j] = new Population(front[j].Count);
+				ranking[j] = new Population_NSGA(front[j].Count);
 				foreach (var it1 in front[j])
 				{
 					ranking[j].Add(population.Get(it1));
@@ -140,7 +140,7 @@ namespace RBF_TIMESERIES
 		/// </summary>
 		/// <param name="rank">The rank</param>
 		/// <returns>Object representing the <code>SolutionSet</code>.</returns>
-		public Population GetSubfront(int rank)
+		public Population_NSGA GetSubfront(int rank)
 		{
 			return ranking[rank];
 		}

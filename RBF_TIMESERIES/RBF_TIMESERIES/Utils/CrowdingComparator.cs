@@ -2,9 +2,9 @@
 
 namespace RBF_TIMESERIES.Utils
 {
-	public class CrowdingComparator : IComparer<Individual>
+	public class CrowdingComparator : IComparer<Individual_NSGA>
 	{
-		public int Compare(Individual s1, Individual s2)
+		public int Compare(Individual_NSGA s1, Individual_NSGA s2)
 		{
 			if (s1 == null)
 			{
@@ -37,7 +37,7 @@ namespace RBF_TIMESERIES.Utils
 			return 0;
 		}
 
-        public int RankCompare(Individual s1, Individual s2)
+        public int RankCompare(Individual_NSGA s1, Individual_NSGA s2)
         {
             if (s1 == null)
             {

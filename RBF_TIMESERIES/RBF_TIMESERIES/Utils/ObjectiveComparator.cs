@@ -2,7 +2,7 @@
 
 namespace RBF_TIMESERIES.Utils
 {
-	public class ObjectiveComparator : IComparer<Individual>
+	public class ObjectiveComparator : IComparer<Individual_NSGA>
 	{
 		#region Private attibutes
 
@@ -40,7 +40,7 @@ namespace RBF_TIMESERIES.Utils
 
 		#region Implement Interface
 
-		public int Compare(Individual individual1, Individual individual2)
+		public int Compare(Individual_NSGA individual1, Individual_NSGA individual2)
 		{
 			int result;
 

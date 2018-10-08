@@ -11,11 +11,11 @@ namespace RBF_TIMESERIES
         private int m_Population_size;
         private int m_IndividualLength;
         private Random m_Random;
-        private Population m_Population;
+        private Population_GA m_Population;
         private RadialNetwork m_RadialNetwork;
         private double m_MaxIterations;
 
-        public Population Population
+        public Population_GA Population
         {
             get
             {
@@ -28,16 +28,16 @@ namespace RBF_TIMESERIES
             }
         }
 
-        public GAs(int m_Population_size, int m_IndividualLength, RadialNetwork RadialNetwork, double m_MaxIterations, double[][] inputData, int numberOfObjectives)
+        public GAs(int m_Population_size, int m_IndividualLength, RadialNetwork RadialNetwork, double m_MaxIterations, double[][] inputData)
         {
             this.m_Population_size = m_Population_size;
             this.m_IndividualLength = m_IndividualLength;
             this.m_Random = new Random();
-            this.Population = new Population(m_Population_size);
+            this.Population = new Population_GA(m_Population_size);
             this.m_RadialNetwork = RadialNetwork;
             this.m_MaxIterations = m_MaxIterations;
 
-            this.Population.Population_init(m_IndividualLength, numberOfObjectives);
+            this.Population.Population_init(m_IndividualLength);
             // set fitness
             for (int i = 0; i < m_Population_size; i++)
             {
@@ -46,7 +46,7 @@ namespace RBF_TIMESERIES
         }
 
         // Đây là hàm đột biến, Kiểu đột biến đa thức ( sau này đọc sẽ hiểu)
-        private void DoMutation(Individual individual)
+        private void DoMutation(Individual_GA individual)
         {
             //RadialNetwork rn = new RadialNetwork(numInput, numHidden, numOutput);
             double eta_m = 20.0;
@@ -92,13 +92,13 @@ namespace RBF_TIMESERIES
             }
         }
         // Đây là hàm lai ghép, 2 điểm cắt
-        private Individual[] DoCrossover(Individual parent1, Individual parent2) // TwoCrossCutingPoint
+        private Individual_GA[] DoCrossover(Individual_GA parent1, Individual_GA parent2) // TwoCrossCutingPoint
         {
             double probability = 0.9;
-            Individual[] offSpring = new Individual[2];
+            Individual_GA[] offSpring = new Individual_GA[2];
             
-            offSpring[0] = new Individual(parent1);
-            offSpring[1] = new Individual(parent2);
+            offSpring[0] = new Individual_GA(parent1);
+            offSpring[1] = new Individual_GA(parent2);
             int crosspoint1;
             int crosspoint2;
             if (m_Random.NextDouble() <= probability)
@@ -144,24 +144,24 @@ namespace RBF_TIMESERIES
         {
             for (int i = 0; i < m_MaxIterations; i++)
             {
-                Population pop_temp = new Population(m_Population_size); // tao mot population tam
-                pop_temp = (Population)Population.Clone();
+                Population_GA pop_temp = new Population_GA(m_Population_size); // tao mot population tam
+                pop_temp = (Population_GA)Population.Clone();
                 // Duyệt qua tất cả các cá thể trong quần thể
                 for (int index = 0; index < m_Population_size; index++)
                 {
-                    Individual currIndividual = pop_temp.Individuals[index];
+                    Individual_GA currIndividual = pop_temp.Individuals[index];
                     int sol1 = (int)(m_Random.NextDouble() * (m_Population_size - 1));
                     int sol2 = (int)(m_Random.NextDouble() * (m_Population_size - 1));
 
-                    Individual solution1 = pop_temp.Individuals[sol1];
-                    Individual solution2 = pop_temp.Individuals[sol2];
+                    Individual_GA solution1 = pop_temp.Individuals[sol1];
+                    Individual_GA solution2 = pop_temp.Individuals[sol2];
 
                     while (sol1 == sol2)
                     {
                         sol2 = (int)(m_Random.NextDouble() * (m_Population_size - 1));
                         solution2 = pop_temp.Individuals[sol2];
                     }
-                    Individual[] Childs = DoCrossover(solution1, solution2);//DoCrossover(solution1, solution2);// 
+                    Individual_GA[] Childs = DoCrossover(solution1, solution2);//DoCrossover(solution1, solution2);// 
                     DoMutation(Childs[0]);
                     DoMutation(Childs[1]);
                     // tính toán lại độ thích nghi và từ đó tính ra MSE của cá thể đang xét
@@ -171,14 +171,14 @@ namespace RBF_TIMESERIES
                     // chỉ với những cái cho ra MSE tốt thì mới được cho vào thế hệ mới, còn không vẫn giữ những cái cũ
                     if (MSE_temp1 > MSE_temp2)
                     {
-                        if (MSE_temp1 > currIndividual.Objective[0])
+                        if (MSE_temp1 > currIndividual.Fitness)
                         {
                             Childs[0].Values.CopyTo(Population.Individuals[index].Values, 0);
                         }
                     }
                     else
                     {
-                        if (MSE_temp2 > currIndividual.Objective[0])
+                        if (MSE_temp2 > currIndividual.Fitness)
                         {
                             Childs[1].Values.CopyTo(Population.Individuals[index].Values, 0);
                         }
@@ -187,14 +187,14 @@ namespace RBF_TIMESERIES
             }
         }
 
-        private double CalculateFitnessOf(Individual individual, double[][] inputData)
+        private double CalculateFitnessOf(Individual_GA individual, double[][] inputData)
         {
             // Chỗ này chính là chỗ cần dùng với RBF đây
             RadialNetwork rn = new RadialNetwork(m_RadialNetwork);
             double fitness = 0.0;
             rn.SetWeights(individual.values);
             fitness = rn.Accuracy(inputData);
-            individual.Objective[0] = fitness;
+            individual.Fitness = fitness;
             return fitness;
         }
     }

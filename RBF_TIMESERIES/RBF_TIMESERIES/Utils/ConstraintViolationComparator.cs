@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace RBF_TIMESERIES.Utils
 {
-	public class ConstraintViolationComparator : IComparer<Individual>
+	public class ConstraintViolationComparator : IComparer<Individual_NSGA>
     {
 		/// <summary>
 		/// Compares two solutions.
@@ -11,7 +11,7 @@ namespace RBF_TIMESERIES.Utils
 		/// <param name="s1">The first <code>Solution</code></param>
 		/// <param name="s2">The second <code>Solution</code></param>
 		/// <returns>-1, or 0, or 1 if o1 is less than, equal, or greater than o2, respectively.</returns>
-		public int Compare(Individual s1, Individual s2)
+		public int Compare(Individual_NSGA s1, Individual_NSGA s2)
 		{
 			int result;
 			double overall1, overall2;
@@ -54,7 +54,7 @@ namespace RBF_TIMESERIES.Utils
         /// <param name="s1"></param>
         /// <param name="s2"></param>
         /// <returns>Returns true if solutions s1 and/or s2 have an overall constraint violation < 0</returns>
-        public bool NeedToCompare(Individual s1, Individual s2)
+        public bool NeedToCompare(Individual_NSGA s1, Individual_NSGA s2)
 		{
 			bool needToCompare;
 			needToCompare = (s1.OverallConstraintViolation < 0) || (s2.OverallConstraintViolation < 0);

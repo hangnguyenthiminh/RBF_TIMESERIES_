@@ -15,9 +15,10 @@ namespace RBF_TIMESERIES
         private int m_Population_size;
         private int m_IndividualLength;
         private Random m_Random;
-        private Population m_Population;
+        private Population_NSGA m_Population;
         private RadialNetwork m_RadialNetwork;
         private double m_MaxEvaluations;
+        private double[][] inputData;
         //
         private double crossoverProbability = 0.9;
         private static readonly double EPS = 1.0e-14;
@@ -27,7 +28,7 @@ namespace RBF_TIMESERIES
         private static readonly double eta_m = ETA_M_DEFAULT;
         private double mutationProb;
 
-        public Population Population
+        public Population_NSGA Population
         {
             get
             {
@@ -51,43 +52,33 @@ namespace RBF_TIMESERIES
             this.m_Population_size = m_Population_size;
             this.m_IndividualLength = m_IndividualLength;
             this.m_Random = new Random();
-            this.Population = new Population(m_Population_size);
+            this.Population = new Population_NSGA(m_Population_size);
             this.m_RadialNetwork = RadialNetwork;
             this.m_MaxEvaluations = m_MaxEvaluations;
-            this.Population.Population_init(m_IndividualLength, numberOfObjectives);
+            this.inputData = inputData;
             mutationProb = 1.0 / m_IndividualLength;
 
+            this.Population.Population_init(m_IndividualLength, numberOfObjectives);
             // set fitness
             for (int i = 0; i < m_Population_size; i++)
             {
-                 CalculateFitnessOf(Population.Individuals[i], inputData);
+                CalculateMSE(Population.Individuals[i], inputData);
             }
         }
 
-        private double CalculateFitnessOf(Individual individual, double[][] inputData)
-        {
-            // Chỗ này chính là chỗ cần dùng với RBF đây
-            RadialNetwork rn = new RadialNetwork(m_RadialNetwork);
-            double fitness = 0.0;
-            rn.SetWeights(individual.values);
-            fitness = rn.Accuracy(inputData);
-            individual.Objective[0] = fitness;
-            return fitness;
-        }
-
-
+      
 
         /// <summary>
         /// Runs the NSGA-II algorithm.
         /// </summary>
         /// <returns>a <code>SolutionSet</code> that is a set of non dominated solutions as a result of the algorithm execution</returns>
-        public Population Execute(double[][] inputData)
+        public Population_NSGA Execute()
         {
             int evaluations;
 
-            Population population;
-            Population offspringPopulation;
-            Population union;
+            Population_NSGA population;
+            Population_NSGA offspringPopulation;
+            Population_NSGA union;
 
             //Initialize the variables
             evaluations = 0;
@@ -96,14 +87,14 @@ namespace RBF_TIMESERIES
 
             // Bước 1: Khởi tạo quần thể
             // Create the initial solutionSet
-            population = new Population(m_Population_size);
-            population = (Population)Population.Clone();
+            population = new Population_NSGA(m_Population_size);
+            population = (Population_NSGA)Population.Clone();
             // Vòng lặp tiến hóa 
             while (evaluations < m_MaxEvaluations)
             {
                 // Create the offSpring solutionSet      
-                offspringPopulation = new Population(m_Population_size); // Tập cá thể con
-                Individual[] parents = new Individual[2];
+                offspringPopulation = new Population_NSGA(m_Population_size); // Tập cá thể con
+                Individual_NSGA[] parents = new Individual_NSGA[2];
 
                 for (int i = 0; i < (m_Population_size / 2); i++) // N/2
                 {
@@ -122,13 +113,17 @@ namespace RBF_TIMESERIES
                         }
 
                         // Sử dụng SBX crossover tạo ra 2 thằng con
-                        Individual[] offSpring = SBXCrossover(parents);
+                        Individual_NSGA[] offSpring = SBXCrossover(parents);
 
                         DoMutation(offSpring[0]);
                         DoMutation(offSpring[1]);
 
-                        offSpring[0].Objective[0] = CalculateFitnessOf(offSpring[0], inputData);
-                        offSpring[1].Objective[0] = CalculateFitnessOf(offSpring[1], inputData);
+                        //tinh mse, div cho moi ca the
+                        offSpring[0].Objective[0] = CalculateMSE(offSpring[0], inputData);
+                        offSpring[0].Objective[0] = CalculateDIV(offSpring);
+                        //xem lai cho nay da?
+                        offSpring[1].Objective[0] = CalculateMSE(offSpring[1], inputData);
+                        offSpring[1].Objective[0] = CalculateDIV(offSpring);
 
                         // Đưa 2 con vào danh sách 
                         offspringPopulation.Add(offSpring[0]);
@@ -136,17 +131,17 @@ namespace RBF_TIMESERIES
                         evaluations += 2;
                     }
                 }
-                //union = ((SolutionSet)population).Union(offspringPopulation);
-                // Đến đây mình có n cá thể cha ((population),), N có thể con (offspringPopulation)
+                //Tinh ham muc tieu f2
+
                 // Create the solutionSet union of solutionSet and offSpring
-                union = ((Population)population).Union(offspringPopulation);
+                union = ((Population_NSGA)population).Union(offspringPopulation);
 
                 // Ranking the union - Sxep ko troi - non-dominated sorting
                 Ranking ranking = new Ranking(union);
 
                 int remain = m_Population_size;
                 int index = 0;
-                Population front = null;
+                Population_NSGA front = null;
                 population.Clear();
 
                 // Obtain the next front
@@ -191,11 +186,11 @@ namespace RBF_TIMESERIES
             }
             // Return the first non-dominated front
             Ranking rank = new Ranking(population);
-            Population result = rank.GetSubfront(0);
+            Population_NSGA result = rank.GetSubfront(0);
             return result;
         }
 
-        private Individual[] SBXCrossover(Individual[] parents)
+        private Individual_NSGA[] SBXCrossover(Individual_NSGA[] parents)
         {
             if (parents.Length != 2)
             {
@@ -203,18 +198,18 @@ namespace RBF_TIMESERIES
                 throw new Exception("Exception in " + this.GetType().FullName + ".Execute()");
             }
 
-            Individual[] offSpring;
+            Individual_NSGA[] offSpring;
             offSpring = DoCrossover(crossoverProbability, parents[0], parents[1]);
 
             return offSpring;
         }
 
-        private Individual[] DoCrossover(double crossoverProbability, Individual parent1, Individual parent2)
+        private Individual_NSGA[] DoCrossover(double crossoverProbability, Individual_NSGA parent1, Individual_NSGA parent2)
         {
-            Individual[] offSpring = new Individual[2];
+            Individual_NSGA[] offSpring = new Individual_NSGA[2];
 
-            offSpring[0] = new Individual(parent1);
-            offSpring[1] = new Individual(parent2);
+            offSpring[0] = new Individual_NSGA(parent1);
+            offSpring[1] = new Individual_NSGA(parent2);
 
             int i;
             double rand;
@@ -222,10 +217,10 @@ namespace RBF_TIMESERIES
             double c1, c2;
             double alpha, beta, betaq;
             double valueX1, valueX2;
-            Individual x1 = new Individual(parent1);
-            Individual x2 = new Individual(parent2);
-            Individual offs1 = new Individual(offSpring[0]);
-            Individual offs2 = new Individual(offSpring[1]);
+            Individual_NSGA x1 = new Individual_NSGA(parent1);
+            Individual_NSGA x2 = new Individual_NSGA(parent2);
+            Individual_NSGA offs1 = new Individual_NSGA(offSpring[0]);
+            Individual_NSGA offs2 = new Individual_NSGA(offSpring[1]);
 
             int numberOfVariables = x1.N_gens;
 
@@ -338,12 +333,12 @@ namespace RBF_TIMESERIES
             return offSpring;
         }
 
-        private void DoMutation(Individual individual)
+        private void DoMutation(Individual_NSGA individual)
         {
             double rnd, delta1, delta2, mut_pow, deltaq;
             double y, yl, yu, val, xy;
 
-            Individual x = new Individual(individual);
+            Individual_NSGA x = new Individual_NSGA(individual);
             for (int var = 0; var < individual.N_gens; var++)
             {
                 if (m_Random.NextDouble() <= mutationProb)
@@ -382,7 +377,7 @@ namespace RBF_TIMESERIES
             }
         }
 
-        public void CrowdingDistanceAssignment(Population population)
+        public void CrowdingDistanceAssignment(Population_NSGA population)
         {
             int size = population.Population_size;
             if (size == 0)
@@ -400,7 +395,7 @@ namespace RBF_TIMESERIES
                 return;
             }
 
-            Population front = new Population(size);
+            Population_NSGA front = new Population_NSGA(size);
             for (int i = 0; i < size; i++)
             {
                 front.Add(population.Get(i));
@@ -414,25 +409,65 @@ namespace RBF_TIMESERIES
             double distance;
 
             //2 hàm mục tiêu
-           for (int i = 0; i < 2; i++)
-			{
-				// Sort the population by Obj n            
-				front.Sort(new ObjectiveComparator(i));
-				objetiveMinn = front.Get(0).Objective[i];
-				objetiveMaxn = front.Get(front.Size() - 1).Objective[i];
+            for (int i = 0; i < 2; i++)
+            {
+                // Sort the population by Obj n            
+                front.Sort(new ObjectiveComparator(i));
+                objetiveMinn = front.Get(0).Objective[i];
+                objetiveMaxn = front.Get(front.Size() - 1).Objective[i];
 
-				//Set de crowding distance            
-				front.Get(0).CrowdingDistance = double.PositiveInfinity;
-				front.Get(size - 1).CrowdingDistance = double.PositiveInfinity;
+                //Set de crowding distance            
+                front.Get(0).CrowdingDistance = double.PositiveInfinity;
+                front.Get(size - 1).CrowdingDistance = double.PositiveInfinity;
 
-				for (int j = 1; j < size - 1; j++)
-				{
-					distance = front.Get(j + 1).Objective[i] - front.Get(j - 1).Objective[i];
-					distance = distance / (objetiveMaxn - objetiveMinn);
-					distance += front.Get(j).CrowdingDistance;
-					front.Get(j).CrowdingDistance = distance;
-				}
-			}
+                for (int j = 1; j < size - 1; j++)
+                {
+                    distance = front.Get(j + 1).Objective[i] - front.Get(j - 1).Objective[i];
+                    distance = distance / (objetiveMaxn - objetiveMinn);
+                    distance += front.Get(j).CrowdingDistance;
+                    front.Get(j).CrowdingDistance = distance;
+                }
+            }
+        }
+
+        public void Diversity(Population_NSGA population_NSGA)
+        {
+
+        }
+
+        public double CalculateDIV(Individual_NSGA[] individuals)
+        {
+            int N = individuals.Length;
+            double[] mse = new double[N];
+            double sum = 0;
+            double distance = 0;
+
+            for (int i = 0; i < N; i++)
+            {
+                mse[i] = CalculateMSE(individuals[i],inputData);
+            }
+            for (int i = 0; i < N; i++)
+            {
+                distance = 0;
+                for (int j = 0; j < N; j++)
+                {
+                    distance += Math.Abs(mse[i] - mse[j]);
+                }
+                sum += distance;
+            }
+            return sum/N;
+        }
+        
+        //tinh mse cho moi ca the
+        private double CalculateMSE(Individual_NSGA individual, double[][] inputData)
+        {
+            // Chỗ này chính là chỗ cần dùng với RBF đây
+            RadialNetwork rn = new RadialNetwork(m_RadialNetwork);
+            double fitness = 0.0;
+            rn.SetWeights(individual.values);
+            fitness = rn.Accuracy(inputData);
+            individual.Objective[0] = fitness;
+            return fitness;
         }
     }
 }

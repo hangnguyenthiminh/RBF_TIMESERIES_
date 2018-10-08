@@ -9,7 +9,7 @@ namespace RBF_TIMESERIES
     ///  Mỗi cá thể sẽ gồm 2 thuộc tính
     ///  Em đọc qua đi xem có gì hỏi không? sau đó mới vào quá trình tiến hóa của nó. Được rồi thầy ạ, em đọc xong rồi ạ
     /// </summary>
-    public class Individual
+    public class Individual_NSGA
     {
         private int n_gens;  // Chiều dài của chuỗi cá thể ( độ dài của mảng weight)
         public double[] values; // Mảng lưu giá trị của weight ây
@@ -72,7 +72,7 @@ namespace RBF_TIMESERIES
         /// </summary>
         public double OverallConstraintViolation { get; set; }
 
-        public Individual(int n_gens, int numberOfObjectives)
+        public Individual_NSGA(int n_gens, int numberOfObjectives)
         {
             this.n_gens = n_gens;
             values = new double[n_gens];
@@ -93,7 +93,7 @@ namespace RBF_TIMESERIES
         {
             values = w;
         }
-        public Individual()
+        public Individual_NSGA()
         {
             this.OverallConstraintViolation = 0.0;
             this.CrowdingDistance = 0.0;
@@ -102,7 +102,7 @@ namespace RBF_TIMESERIES
             this.Values = null;
         }
 
-        public Individual(Individual w)
+        public Individual_NSGA(Individual_NSGA w)
         {
             this.n_gens = w.n_gens;
             this.values = w.Values;
