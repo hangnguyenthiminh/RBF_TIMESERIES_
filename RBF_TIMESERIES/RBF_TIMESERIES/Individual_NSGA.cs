@@ -63,6 +63,10 @@ namespace RBF_TIMESERIES
                     return numberOfObjectives;
                 };
             }
+            set
+            {
+                numberOfObjectives = value;
+            }
         }
 
         public int Rank { get; set; }

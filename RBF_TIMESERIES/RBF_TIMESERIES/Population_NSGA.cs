@@ -7,23 +7,22 @@ namespace RBF_TIMESERIES
     public class Population_NSGA : ICloneable
     {
         private int population_size; // Kích thước quần thể
-        private Individual_NSGA[] individuals; // Tập cá thể trong quần thể
-        private List<Individual_NSGA> individualList; //
+        private List<Individual_NSGA> individualList; //List ca the
         public int Population_size
         {
             get { return population_size; }
             set { population_size = value; }
         }
 
-        public Individual_NSGA[] Individuals
-        {
-            get { return individuals; }
-            set { individuals = value; }
-        }
         public Population_NSGA(int population_size)
         {
             this.population_size = population_size;
-            individuals = new Individual_NSGA[population_size];
+            individualList = new List<Individual_NSGA>();
+        }
+
+        public Population_NSGA()
+        {
+            this.population_size = 0;
             individualList = new List<Individual_NSGA>();
         }
 
@@ -38,8 +37,8 @@ namespace RBF_TIMESERIES
 
         public List<Individual_NSGA> IndividualList
         {
-            get;
-            protected set;
+            get { return individualList; }
+            set { individualList = value; }
         }
 
         public int Size()
@@ -70,11 +69,12 @@ namespace RBF_TIMESERIES
         public void Population_init(int n_gens, int numberOfObjectives)
         {
             Random r = new Random();
-
+            Individual_NSGA individualItem;
             for (int i = 0; i < population_size; i++)
             {
-                individuals[i] = new Individual_NSGA(n_gens, numberOfObjectives);
-                individuals[i].Individual_init(r);
+                individualItem = new Individual_NSGA(n_gens, numberOfObjectives);
+                individualItem.Individual_init(r);
+                IndividualList.Add(individualItem);
             }
         }
 
@@ -84,13 +84,13 @@ namespace RBF_TIMESERIES
             int indeMax = 0;
             for (int i = 0; i < population_size; i++)
             {
-                if (individuals[i].Objective[0] > max)
+                if (individualList[i].Objective[0] > max)
                 {
-                    max = individuals[i].Objective[0];
+                    max = individualList[i].Objective[0];
                     indeMax = i;
                 }
             }
-            return individuals[indeMax];
+            return individualList[indeMax];
         }
 
         public Population_NSGA Union(Population_NSGA population)

@@ -379,11 +379,10 @@ namespace RBF_TIMESERIES
             int numberOfObjectives = 2;
             int Dim = (numHidden * numOutput) + numOutput; // dimensions is num weights + num biases
             NSGAII nsgaIIAlgorithm = new NSGAII(populationSize, Dim, this, maxEvaluations, trainData, numberOfObjectives);
-            Population_NSGA bestWeights = new Population_NSGA(populationSize);
+            Population_NSGA bestWeights = new Population_NSGA();
             bestWeights = nsgaIIAlgorithm.Execute();
-
             ///
-            Population_NSGA returnResult = new Population_NSGA(maxEvaluations);
+            Population_NSGA returnResult = new Population_NSGA();
             return returnResult;
         } // DoWeights
 

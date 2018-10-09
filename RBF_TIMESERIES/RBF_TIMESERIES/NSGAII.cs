@@ -1,5 +1,6 @@
 ﻿using RBF_TIMESERIES.Utils;
 using System;
+using System.Collections.Generic;
 
 namespace RBF_TIMESERIES
 {
@@ -57,16 +58,11 @@ namespace RBF_TIMESERIES
             this.m_MaxEvaluations = m_MaxEvaluations;
             this.inputData = inputData;
             mutationProb = 1.0 / m_IndividualLength;
-
             this.Population.Population_init(m_IndividualLength, numberOfObjectives);
-            // set fitness
-            for (int i = 0; i < m_Population_size; i++)
-            {
-                CalculateMSE(Population.Individuals[i], inputData);
-            }
+
         }
 
-      
+
 
         /// <summary>
         /// Runs the NSGA-II algorithm.
@@ -89,6 +85,13 @@ namespace RBF_TIMESERIES
             // Create the initial solutionSet
             population = new Population_NSGA(m_Population_size);
             population = (Population_NSGA)Population.Clone();
+            // set mse cho moi ca the
+            for (int i = 0; i < m_Population_size; i++)
+            {
+                Individual_NSGA individual = population.IndividualList[i];
+                individual.Objective[0] = CalculateMSE(individual, inputData);
+            }
+
             // Vòng lặp tiến hóa 
             while (evaluations < m_MaxEvaluations)
             {
@@ -103,27 +106,27 @@ namespace RBF_TIMESERIES
                         //Lấy 2 Cha parents
                         int sol1 = (int)(m_Random.NextDouble() * (m_Population_size - 1));
                         int sol2 = (int)(m_Random.NextDouble() * (m_Population_size - 1));
-                        parents[0] = population.Individuals[sol1];
-                        parents[1] = population.Individuals[sol2];
+                        parents[0] = population.IndividualList[sol1];
+                        parents[1] = population.IndividualList[sol2];
                         //
                         while (sol1 == sol2)
                         {
                             sol2 = (int)(m_Random.NextDouble() * (m_Population_size - 1));
-                            parents[1] = population.Individuals[sol2];
+                            parents[1] = population.IndividualList[sol2];
                         }
 
                         // Sử dụng SBX crossover tạo ra 2 thằng con
                         Individual_NSGA[] offSpring = SBXCrossover(parents);
-
+                        //Dot bien
                         DoMutation(offSpring[0]);
                         DoMutation(offSpring[1]);
 
                         //tinh mse, div cho moi ca the
                         offSpring[0].Objective[0] = CalculateMSE(offSpring[0], inputData);
-                        offSpring[0].Objective[0] = CalculateDIV(offSpring);
-                        //xem lai cho nay da?
+                        //offSpring[0].Objective[1] = CalculateDIV(parents);
+
                         offSpring[1].Objective[0] = CalculateMSE(offSpring[1], inputData);
-                        offSpring[1].Objective[0] = CalculateDIV(offSpring);
+                        // offSpring[1].Objective[1] = CalculateDIV(offSpring);
 
                         // Đưa 2 con vào danh sách 
                         offspringPopulation.Add(offSpring[0]);
@@ -430,34 +433,78 @@ namespace RBF_TIMESERIES
             }
         }
 
-        public void Diversity(Population_NSGA population_NSGA)
+        public double Diversity(List<Individual_NSGA> individualList)
         {
+           // List<Individual_NSGA> individualList = population_NSGA.IndividualList;
+            int N = individualList.Count;
+            double[] mse = new double[N];
+            double sum = 0;
+            double distance = 0;
+            double err = 0;
 
+            foreach (Individual_NSGA item in individualList)
+            {
+                for (int i = 0; i < N; i++)
+                {
+                    mse[i] = CalculateMSE(item, inputData);
+                }
+                for (int i = 0; i < N; i++)
+                {
+                    distance = 0;
+                    for (int j = 0; j < N; j++)
+                    {
+                        distance += Math.Abs(mse[i] - mse[j]);
+                    }
+                    sum += distance;
+                }
+
+            }
+            err = sum / N;
+            //for (int k = 0; k < population_NSGA.Size(); k++)
+            //{
+            //    individuals = population_NSGA.Individuals;
+            //    for (int i = 0; i < N; i++)
+            //    {
+            //        mse[i] = CalculateMSE(individuals[i], inputData);
+            //    }
+            //    for (int i = 0; i < N; i++)
+            //    {
+            //        distance = 0;
+            //        for (int j = 0; j < N; j++)
+            //        {
+            //            distance += Math.Abs(mse[i] - mse[j]);
+            //        }
+            //        sum += distance;
+            //    }
+            //    err = sum / N;
+            //}
+            return err;
         }
 
         public double CalculateDIV(Individual_NSGA[] individuals)
         {
-            int N = individuals.Length;
-            double[] mse = new double[N];
+            int n = individuals.Length;
+            double[] mse = new double[n];
             double sum = 0;
             double distance = 0;
 
-            for (int i = 0; i < N; i++)
+            for (int i = 0; i < n; i++)
             {
-                mse[i] = CalculateMSE(individuals[i],inputData);
+                mse[i] = CalculateMSE(individuals[i], inputData);
             }
-            for (int i = 0; i < N; i++)
+            for (int i = 0; i < n; i++)
             {
                 distance = 0;
-                for (int j = 0; j < N; j++)
+                for (int j = 0; j < n; j++)
                 {
                     distance += Math.Abs(mse[i] - mse[j]);
                 }
                 sum += distance;
             }
-            return sum/N;
+            return sum / n;
+           // return 0;
         }
-        
+
         //tinh mse cho moi ca the
         private double CalculateMSE(Individual_NSGA individual, double[][] inputData)
         {
@@ -466,7 +513,7 @@ namespace RBF_TIMESERIES
             double fitness = 0.0;
             rn.SetWeights(individual.values);
             fitness = rn.Accuracy(inputData);
-            individual.Objective[0] = fitness;
+            //individual.Objective[0] = fitness;
             return fitness;
         }
     }
