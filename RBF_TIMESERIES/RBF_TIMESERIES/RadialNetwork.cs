@@ -149,6 +149,36 @@ namespace RBF_TIMESERIES
 
         }
 
+
+        public double getMSEOf(double[][] data)
+        {
+            int totalNumber = data.Length;
+            double err = 0;
+            double sum = 0;
+            double[] xValues = new double[numInput]; // inputs
+            double[] ideals = new double[numOutput]; // targets
+            double[] yValues = new double[NumOutput]; // computed Y
+            for (int i = 0; i < data.Length; ++i)
+            {
+                Array.Copy(data[i], xValues, numInput); // parse test data into x-values and ideals
+                Array.Copy(data[i], numInput, ideals, 0, numOutput);
+                yValues = this.ComputeOutputs(xValues);
+                sum += GetDistance(yValues, ideals);
+            }
+            err = sum / totalNumber;
+            return err;
+        }
+
+        public double GetDistance(double[] actual, double[] ideal)
+        {
+            double d = 0;
+            for (int i = 0; i < actual.Length; i++)
+            {
+                d += (actual[i] - ideal[i]) * (actual[i] - ideal[i]);
+            }
+            return d;
+        }
+
         private static int MaxIndex(double[] vector) // helper for Accuracy()
         {
             // index of largest value

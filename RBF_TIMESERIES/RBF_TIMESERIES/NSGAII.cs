@@ -28,6 +28,7 @@ namespace RBF_TIMESERIES
         private static readonly double ETA_M_DEFAULT = 20.0;
         private static readonly double eta_m = ETA_M_DEFAULT;
         private double mutationProb;
+        private int indexF2 = 0;
 
         public Population_NSGA Population
         {
@@ -71,7 +72,6 @@ namespace RBF_TIMESERIES
         public Population_NSGA Execute()
         {
             int evaluations;
-
             Population_NSGA population;
             Population_NSGA offspringPopulation;
             Population_NSGA union;
@@ -79,19 +79,18 @@ namespace RBF_TIMESERIES
             //Initialize the variables
             evaluations = 0;
 
-            //  requiredEvaluations = 0;
-
             // Bước 1: Khởi tạo quần thể
             // Create the initial solutionSet
             population = new Population_NSGA(m_Population_size);
             population = (Population_NSGA)Population.Clone();
-            // set mse cho moi ca the
+            // Danh gia ham muc tieu 1 cho quan the Pt
             for (int i = 0; i < m_Population_size; i++)
             {
                 Individual_NSGA individual = population.IndividualList[i];
                 individual.Objective[0] = CalculateMSE(individual, inputData);
             }
-
+            // Danh gia ham muc tieu 2 cho quan the Pt
+            Diversity(population);
             // Vòng lặp tiến hóa 
             while (evaluations < m_MaxEvaluations)
             {
@@ -121,12 +120,9 @@ namespace RBF_TIMESERIES
                         DoMutation(offSpring[0]);
                         DoMutation(offSpring[1]);
 
-                        //tinh mse, div cho moi ca the
+                        //Danh gia ham muc tieu 1 cho quan the moi Qt
                         offSpring[0].Objective[0] = CalculateMSE(offSpring[0], inputData);
-                        //offSpring[0].Objective[1] = CalculateDIV(parents);
-
                         offSpring[1].Objective[0] = CalculateMSE(offSpring[1], inputData);
-                        // offSpring[1].Objective[1] = CalculateDIV(offSpring);
 
                         // Đưa 2 con vào danh sách 
                         offspringPopulation.Add(offSpring[0]);
@@ -134,8 +130,8 @@ namespace RBF_TIMESERIES
                         evaluations += 2;
                     }
                 }
-                //Tinh ham muc tieu f2
-
+                //Danh gia ham muc tieu 2 cho quan the moi Qt
+                Diversity(offspringPopulation);
                 // Create the solutionSet union of solutionSet and offSpring
                 union = ((Population_NSGA)population).Union(offspringPopulation);
 
@@ -433,77 +429,100 @@ namespace RBF_TIMESERIES
             }
         }
 
-        public double Diversity(List<Individual_NSGA> individualList)
+        public void Diversity(Population_NSGA population)
         {
-           // List<Individual_NSGA> individualList = population_NSGA.IndividualList;
-            int N = individualList.Count;
-            double[] mse = new double[N];
-            double sum = 0;
-            double distance = 0;
-            double err = 0;
-
-            foreach (Individual_NSGA item in individualList)
+            double objetiveMaxn;
+            double objetiveMinn;
+            double distance;
+            int N = population.Size();
+            if (N == 1)
             {
-                for (int i = 0; i < N; i++)
-                {
-                    mse[i] = CalculateMSE(item, inputData);
-                }
-                for (int i = 0; i < N; i++)
-                {
-                    distance = 0;
-                    for (int j = 0; j < N; j++)
-                    {
-                        distance += Math.Abs(mse[i] - mse[j]);
-                    }
-                    sum += distance;
-                }
-
+                population.IndividualList[0].Objective[1] = 1;
+                return;
             }
-            err = sum / N;
-            //for (int k = 0; k < population_NSGA.Size(); k++)
+            //sắp xếp quần thể theo hàm mục tiêu từ bé đến lớn
+            population.Sort(new ObjectiveComparator(0));
+            //nếu quần thể chỉ có 2 cá thể thì ta lấy cả 2 chứ ko cần tính f2 nữa
+            //gán 1,2 để vẽ đồ thị.
+            if (N == 2)
+            {
+                population.IndividualList[0].Objective[1] = 1;
+                population.IndividualList[1].Objective[1] = 2;
+                return;
+            }
+            //nếu quần thể có từ 3 cá thể trở lên
+            objetiveMinn = population.IndividualList[0].Objective[0];
+            objetiveMaxn = population.IndividualList[N - 1].Objective[0];
+
+            population.IndividualList[0].Objective[1] = 0;
+            population.IndividualList[N - 1].Objective[1] = Double.MaxValue;//gán thế này cái cuối cùng sẽ luôn bị loại vì nhỏ hơn thì được ưu tiên
+                                                                            //if (indexF2 == 2)//cicle
+                                                                            //{
+                                                                            //tìm bán kính lớn nhât
+            double bkmax = 0;
+            for (int i = 0; i < N - 1; i++)
+            {
+                double temp = (population.IndividualList[i + 1].Objective[0] - population.IndividualList[i].Objective[0]);
+                if (bkmax < temp)
+                    bkmax = temp;
+            }
+            double r = bkmax;
+            for (int i = 1; i < N - 1; i++)
+            {
+                distance = 0;
+                int dem = 0;
+                for (int j = 0; j < N; j++)
+                {
+                    double dis = Math.Abs(population.IndividualList[i].Objective[0] - population.IndividualList[j].Objective[0]);
+                    if (dis <= r)
+                    {
+                        distance += dis;
+                        dem++;
+                    }
+                }
+                if (dem <= 1)
+                    distance /= (dem - 1);//vì tính cả chính nó nên phải trừ đi 1
+                population.IndividualList[i].Objective[1] = distance;
+            }
+
+            //}
+            //if (indexF2 == 0)//crowding
             //{
-            //    individuals = population_NSGA.Individuals;
-            //    for (int i = 0; i < N; i++)
+            //    for (int j = 1; j < N - 1; j++)
             //    {
-            //        mse[i] = CalculateMSE(individuals[i], inputData);
+            //        distance = population.IndividualList[j + 1].Objective[0] - population.IndividualList[j - 1].Objective[0];
+            //        distance = distance / (objetiveMaxn - objetiveMinn);
+
+            //        population.IndividualList[j].Objective[1] = distance;
             //    }
-            //    for (int i = 0; i < N; i++)
+            //}
+            //if (indexF2 == 1)//distance
+            //{
+            //    for (int i = 1; i < N - 1; i++)
             //    {
             //        distance = 0;
             //        for (int j = 0; j < N; j++)
             //        {
-            //            distance += Math.Abs(mse[i] - mse[j]);
+            //            distance += Math.Abs((population.IndividualList[i].Objective[0] - population.IndividualList[j].Objective[0]));
             //        }
-            //        sum += distance;
+            //        distance /= (N - 1);
+            //        population.IndividualList[i].Objective[1] = distance;
             //    }
-            //    err = sum / N;
             //}
-            return err;
+
         }
 
-        public double CalculateDIV(Individual_NSGA[] individuals)
-        {
-            int n = individuals.Length;
-            double[] mse = new double[n];
-            double sum = 0;
-            double distance = 0;
 
-            for (int i = 0; i < n; i++)
-            {
-                mse[i] = CalculateMSE(individuals[i], inputData);
-            }
-            for (int i = 0; i < n; i++)
-            {
-                distance = 0;
-                for (int j = 0; j < n; j++)
-                {
-                    distance += Math.Abs(mse[i] - mse[j]);
-                }
-                sum += distance;
-            }
-            return sum / n;
-           // return 0;
-        }
+        //tinh mse cho moi ca the
+        //private double CalculateMSE(Individual_NSGA individual, double[][] inputData)
+        //{
+        //    // Chỗ này chính là chỗ cần dùng với RBF đây
+        //    RadialNetwork rn = new RadialNetwork(m_RadialNetwork);
+        //    double fitness = 0.0;
+        //    rn.SetWeights(individual.values);
+        //    fitness = rn.Accuracy(inputData);
+        //    return fitness;
+        //}
 
         //tinh mse cho moi ca the
         private double CalculateMSE(Individual_NSGA individual, double[][] inputData)
@@ -512,9 +531,9 @@ namespace RBF_TIMESERIES
             RadialNetwork rn = new RadialNetwork(m_RadialNetwork);
             double fitness = 0.0;
             rn.SetWeights(individual.values);
-            fitness = rn.Accuracy(inputData);
-            //individual.Objective[0] = fitness;
+            fitness = rn.getMSEOf(inputData);
             return fitness;
         }
+
     }
 }
